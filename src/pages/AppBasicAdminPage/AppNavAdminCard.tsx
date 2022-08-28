@@ -77,12 +77,13 @@ const AppNavAdminCard: React.VFC<AppNavAdminCardProps> = ({ ...cardProps }) => {
                 {(fields, { add, remove }) => {
                   return (
                     <div>
-                      {fields.map(field => (
-                        <Input.Group compact className="d-flex">
+                      {fields.map((field, index) => (
+                        <Input.Group compact className="d-flex" key={index}>
                           <Form.Item
                             {...field}
                             name={[field.name, 'locale']}
                             rules={[{ required: true, whitespace: true, message: 'required' }]}
+                            key={index + '_0'}
                           >
                             <Select placeholder="locale">
                               {SUPPORTED_LOCALES.map(supportedLocale => (
@@ -97,6 +98,7 @@ const AppNavAdminCard: React.VFC<AppNavAdminCardProps> = ({ ...cardProps }) => {
                             name={[field.name, 'label']}
                             style={{ flex: 1 }}
                             rules={[{ required: true, whitespace: true, message: 'required' }]}
+                            key={index + '_1'}
                           >
                             <Input placeholder="label" />
                           </Form.Item>
@@ -105,13 +107,14 @@ const AppNavAdminCard: React.VFC<AppNavAdminCardProps> = ({ ...cardProps }) => {
                             name={[field.name, 'href']}
                             style={{ flex: 1 }}
                             rules={[{ required: true, whitespace: true, message: 'required' }]}
+                            key={index + '_2'}
                           >
                             <Input placeholder="href" />
                           </Form.Item>
-                          <Form.Item {...field} name={[field.name, 'tag']} style={{ width: 100 }}>
+                          <Form.Item {...field} name={[field.name, 'tag']} style={{ width: 100 }} key={index + '_3'}>
                             <Input placeholder="tag" />
                           </Form.Item>
-                          <Form.Item {...field} name={[field.name, 'external']} style={{ width: 120 }}>
+                          <Form.Item {...field} name={[field.name, 'external']} style={{ width: 120 }} key={index + '_4'}>
                             <ExternalSelector />
                           </Form.Item>
                           <Button

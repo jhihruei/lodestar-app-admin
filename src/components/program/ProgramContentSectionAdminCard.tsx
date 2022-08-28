@@ -19,7 +19,7 @@ const messages = defineMessages({
   },
   deleteSection: { id: 'program.ui.deleteSection', defaultMessage: '刪除區塊' },
   createContent: { id: 'program.ui.createContent', defaultMessage: '新增內容' },
-  programContent: { id: 'program.ui.programContent', defaultMessage: '課程內容' },
+  programContent: { id: 'program.ui.programContent', defaultMessage: '課程內容?' },
   programPractice: { id: 'program.ui.practiceContent', defaultMessage: '作業練習' },
   programExercise: { id: 'program.ui.programExercise', defaultMessage: '隨堂測驗' },
 })

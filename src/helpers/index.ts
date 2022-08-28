@@ -42,9 +42,15 @@ export const uploadFile = async (key: string, file: Blob, authToken: string | nu
         headers: { authorization: `Bearer ${authToken}` },
       },
     )
-    .then(res => res.data.result)
+    .then(res => {
+      console.log('response')
+      console.log(res)
+      return res.data.result
+    })
     .then(url => {
+      console.log(url)
       const { query } = queryString.parseUrl(url)
+      console.log(query)
       return axios.put<{ status: number; data: string }>(url, file, {
         ...config,
         headers: {
