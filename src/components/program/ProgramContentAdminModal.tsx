@@ -1,5 +1,18 @@
 import Icon, { EditOutlined, MoreOutlined, UploadOutlined } from '@ant-design/icons'
-import { Button, Checkbox, Dropdown, Form, Input, InputNumber, Menu, message, Modal, Radio, Select, Skeleton } from 'antd'
+import {
+  Button,
+  Checkbox,
+  Dropdown,
+  Form,
+  Input,
+  InputNumber,
+  Menu,
+  message,
+  Modal,
+  Radio,
+  Select,
+  Skeleton,
+} from 'antd'
 import { useForm } from 'antd/lib/form/Form'
 import axios, { Canceler } from 'axios'
 import BraftEditor, { EditorState } from 'braft-editor'
