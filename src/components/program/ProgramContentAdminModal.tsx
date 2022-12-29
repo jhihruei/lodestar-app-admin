@@ -1,19 +1,5 @@
-import Icon, { EditOutlined, MoreOutlined, QuestionCircleFilled, UploadOutlined } from '@ant-design/icons'
-import {
-  Button,
-  Checkbox,
-  Dropdown,
-  Form,
-  Input,
-  InputNumber,
-  Menu,
-  message,
-  Modal,
-  Radio,
-  Select,
-  Skeleton,
-  Tooltip,
-} from 'antd'
+import Icon, { EditOutlined, MoreOutlined, UploadOutlined } from '@ant-design/icons'
+import { Button, Checkbox, Dropdown, Form, Input, InputNumber, Menu, message, Modal, Radio, Select, Skeleton } from 'antd'
 import { useForm } from 'antd/lib/form/Form'
 import axios, { Canceler } from 'axios'
 import BraftEditor, { EditorState } from 'braft-editor'
@@ -25,20 +11,12 @@ import React, { useEffect, useRef, useState } from 'react'
 import { defineMessages, useIntl } from 'react-intl'
 import styled from 'styled-components'
 import { v4 as uuidV4 } from 'uuid'
-import {
-  contentTypeFormat,
-  generateUrlWithID,
-  getFileDuration,
-  getVideoIDByURL,
-  handleError,
-  uploadFile,
-} from '../../helpers'
+import { contentTypeFormat, generateUrlWithID, getVideoIDByURL, handleError, uploadFile } from '../../helpers'
 import { commonMessages, errorMessages, programMessages } from '../../helpers/translation'
 import { useMutateAttachment } from '../../hooks/data'
 import { useMutateProgramContent, useProgramContentActions, useProgramContentBody } from '../../hooks/program'
 import { ReactComponent as ExclamationCircleIcon } from '../../images/icon/exclamation-circle.svg'
 import { ProgramContentProps } from '../../types/program'
-import { StyledTips } from '../admin'
 import AttachmentSelector, { AttachmentSelectorValue } from '../common/AttachmentSelector'
 import FileUploader from '../common/FileUploader'
 import { BREAK_POINT } from '../common/Responsive'
@@ -129,7 +107,7 @@ const ProgramContentAdminModal: React.FC<{
 
   const { loadingProgramContentBody, programContentBody } = useProgramContentBody(programContent.id)
   const { updateProgramContent, updateProgramContentBody, deleteProgramContent } = useMutateProgramContent()
-  const { updatePlans, updateMaterials, updateVideos, updateAudios } = useProgramContentActions(programContent.id)
+  const { updatePlans, updateMaterials, updateVideos } = useProgramContentActions(programContent.id)
 
   const { insertAttachment } = useMutateAttachment()
 
@@ -147,12 +125,10 @@ const ProgramContentAdminModal: React.FC<{
 
   const [loading, setLoading] = useState(false)
   const [materialFiles, setMaterialFiles] = useState<File[]>(programContentBody.materials.map(v => v.data) || [])
-  const [audioFiles, setAudioFiles] = useState<File[]>(programContent.audios.map(v => v.data) || [])
   const [isUploadFailed, setIsUploadFailed] = useState<{
     video?: boolean
     caption?: boolean
     materials?: boolean
-    audio?: boolean
   }>({})
   const [failedUploadFiles, setFailedUploadFiles] = useState<File[]>([])
   const [uploadProgress, setUploadProgress] = useState<{
@@ -177,42 +153,15 @@ const ProgramContentAdminModal: React.FC<{
 
     let updatedProgramContentBodyId = programContentBody.id
 
-    // upload audio files
-    const newAudioFiles = audioFiles.filter(
-      file =>
-        !programContent.audios.some(
-          audio => audio.data.name === file.name && audio.data.lastModified === file.lastModified,
-        ),
-    )
-
-    let audioDuration = newAudioFiles.length === 0 && audioFiles.length > 0 ? values.duration : 0
-
-    if (newAudioFiles.length > 0) {
-      for (const file of newAudioFiles) {
-        await uploadFile(`audios/${appId}/${programId}/${programContent.id}`, file, authToken, {
-          cancelToken: new axios.CancelToken(canceler => (uploadCanceler.current = canceler)),
-          onUploadProgress: ({ loaded, total }) => {
-            setUploadProgress(prev => ({ ...prev, [file.name]: Math.floor((loaded / total) * 100) }))
-          },
-        }).catch(() => {
-          uploadError.materials = true
-          setFailedUploadFiles(prev => [...prev, file])
-        })
-        audioDuration += await getFileDuration(file)
-      }
-    }
-    if (contentType === 'audio') {
-      form.setFieldsValue({ duration: audioDuration })
-    }
     // upload materials
-    const newMaterialFiles = materialFiles.filter(
+    const newFiles = materialFiles.filter(
       file =>
         !programContentBody.materials.some(
           material => material.data.name === file.name && material.data.lastModified === file.lastModified,
         ),
     )
-    if (newMaterialFiles.length) {
-      for (const file of newMaterialFiles) {
+    if (newFiles.length) {
+      for (const file of newFiles) {
         await uploadFile(`materials/${appId}/${programContent.id}_${file.name}`, file, authToken, {
           cancelToken: new axios.CancelToken(canceler => (uploadCanceler.current = canceler)),
           onUploadProgress: ({ loaded, total }) => {
@@ -232,7 +181,7 @@ const ProgramContentAdminModal: React.FC<{
           programContentId: programContent.id,
           price: null,
           title: values.title,
-          duration: values.contentBodyType === 'audio' ? audioDuration : values.duration,
+          duration: values.duration,
           isNotifyUpdate: values.isNotifyUpdate,
           notifiedAt: values.isNotifyUpdate ? new Date() : programContent?.notifiedAt,
           programContentBodyId: updatedProgramContentBodyId,
@@ -285,9 +234,6 @@ const ProgramContentAdminModal: React.FC<{
       await updatePlans(values.planIds || [])
       if (!uploadError.materials) {
         await updateMaterials(materialFiles)
-      }
-      if (!uploadError.audio) {
-        await updateAudios(audioFiles)
       }
       if (Object.values(uploadError).some(v => v)) {
         message.error(formatMessage(commonMessages.event.failedUpload))
@@ -369,12 +315,11 @@ const ProgramContentAdminModal: React.FC<{
                   >
                     <Select.Option value="video">{formatMessage(programMessages.ui.videoContent)}</Select.Option>
                     <Select.Option value="text">{formatMessage(programMessages.ui.articleContent)}</Select.Option>
-                    <Select.Option value="audio">{formatMessage(programMessages.ui.audioContent)}</Select.Option>
                   </Select>
                 </Form.Item>
 
                 {programContent.displayMode && (
-                  <DisplayModeSelector contentType={programContentBody.type} displayMode={programContent.displayMode} />
+                  <DisplayModeSelector contentType="program" displayMode={programContent.displayMode} />
                 )}
 
                 <Form.Item name="isNotifyUpdate" valuePropName="checked" className="mb-0">
@@ -508,43 +453,7 @@ const ProgramContentAdminModal: React.FC<{
               )
             ) : null}
 
-            {contentType === 'audio' ? (
-              <Form.Item
-                label={
-                  <span className="d-flex align-items-center">
-                    {formatMessage(programMessages.label.audioFile)}
-                    <Tooltip title={<StyledTips>{formatMessage(programMessages.text.audioFileTips)}</StyledTips>}>
-                      <QuestionCircleFilled className="ml-2" />
-                    </Tooltip>
-                  </span>
-                }
-              >
-                <FileUploader
-                  renderTrigger={({ onClick }) => (
-                    <>
-                      <Button icon={<UploadOutlined />} onClick={onClick}>
-                        {formatMessage(programMessages.ui.uploadAudioFile)}
-                      </Button>
-                      {isUploadFailed.audio && (
-                        <span className="ml-2">
-                          <Icon component={() => <ExclamationCircleIcon />} className="mr-2" />
-                          <span>{formatMessage(commonMessages.event.failedUpload)}</span>
-                        </span>
-                      )}
-                    </>
-                  )}
-                  showUploadList
-                  accept=".mp3"
-                  fileList={audioFiles}
-                  uploadProgress={uploadProgress}
-                  failedUploadFiles={failedUploadFiles}
-                  downloadableLink={file => `audios/${appId}/${programId}/${programContent.id}`}
-                  onChange={files => setAudioFiles(files)}
-                />
-              </Form.Item>
-            ) : null}
-
-            {(contentType === 'video' || contentType === 'audio') && (
+            {contentType === 'video' && (
               <Form.Item label={formatMessage(messages.duration)} name="duration">
                 <InputNumber
                   min={0}
